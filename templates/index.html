@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertilizer Predictor</title>
+    <!-- Link to External CSS File -->
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center">Fertilizer Predictor</h2>
+        <form id="predictForm" class="mt-4">
+            <div class="mb-3">
+                <label for="fertilizerName" class="form-label">Enter Fertilizer Name:</label>
+                <input type="text" id="fertilizerName" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Predict</button>
+        </form>
+        <div class="mt-4" id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("predictForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("fertilizerName").value;
+            fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerHTML = `<div class='alert alert-info'>
+                    <strong>Uses:</strong> ${data.Uses} <br>
+                    <strong>Price:</strong> ₹${data.Price} <br>
+                    <strong>Quantity:</strong> ${data.Quantity} kg
+                </div>`;
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
