@@ -1,7 +1,5 @@
-from flask import Flask, request, jsonify, render_template
+import streamlit as st
 import joblib
-
-app = Flask(__name__)
 
 # Load models and vectorizer
 price_model = joblib.load("price_model.pkl")
@@ -10,33 +8,27 @@ uses_model = joblib.load("uses_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")
 le_uses = joblib.load("le_uses.pkl")
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+st.title("Fertilizer Predictor")
+st.write("Enter a fertilizer name to predict its price, quantity, and uses.")
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.get_json()
-    fertilizer_name = data.get("name")
-    
-    if not fertilizer_name:
-        return jsonify({"error": "No fertilizer name provided"}), 400
-    
-    # Vectorize the input
-    name_vectorized = vectorizer.transform([fertilizer_name])
-    
-    # Predict values
-    predicted_price = price_model.predict(name_vectorized)[0]
-    predicted_quantity = quantity_model.predict(name_vectorized)[0]
-    predicted_uses_encoded = uses_model.predict(name_vectorized)[0]
-    predicted_uses = le_uses.inverse_transform([predicted_uses_encoded])[0]
-    
-    result = {
-        "Uses": predicted_uses,
-        "Price": round(predicted_price, 2),
-        "Quantity": round(predicted_quantity, 2)
-    }
-    return jsonify(result)
+# Input from user
+fertilizer_name = st.text_input("Fertilizer Name:")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if st.button("Predict"):
+    if fertilizer_name:
+        # Vectorize the input
+        name_vectorized = vectorizer.transform([fertilizer_name])
+        
+        # Predict values
+        predicted_price = price_model.predict(name_vectorized)[0]
+        predicted_quantity = quantity_model.predict(name_vectorized)[0]
+        predicted_uses_encoded = uses_model.predict(name_vectorized)[0]
+        predicted_uses = le_uses.inverse_transform([predicted_uses_encoded])[0]
+        
+        # Display results
+        st.subheader("Prediction Results")
+        st.write(f"**Uses:** {predicted_uses}")
+        st.write(f"**Price:** ${round(predicted_price, 2)}")
+        st.write(f"**Quantity:** {round(predicted_quantity, 2)} kg")
+    else:
+        st.error("Please enter a fertilizer name.")
