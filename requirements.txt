@@ -6,4 +6,4 @@ gunicorn
 flask
 joblib
 streamlit
-sklearn
+scikit-learn
